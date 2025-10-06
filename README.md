@@ -186,3 +186,88 @@ combined_data['clean_text']
 ```
 
 ## NLP
+
+#### Polarity and Subjectivity
+Conducting sentiment analysis was simple. Utilizing TextBlob made the process easy.
+```Python
+nlp_ready_data['polarity'] = nlp_ready_data['clean_text'].apply(lambda x: TextBlob(x).sentiment.polarity)
+nlp_ready_data['subjectivity'] = nlp_ready_data['clean_text'].apply(lambda x: TextBlob(x).sentiment.subjectivity)
+
+
+print(nlp_ready_data.groupby('movie')['polarity'].mean())
+print(nlp_ready_data.groupby('movie')['subjectivity'].mean())
+```
+This code created two new columns in our dataset, 'polarity' and 'subjectivity'. Polarity, on a scale of -1 to 1, indicates the positivity of the text. A score of -1 means the text was negative and 1 means positive. Subjectivity is on a scale of 0 to 1 where 0 means objective and 1 means very subjective.
+
+#### Tokenization
+Tokenization splits up the text data into individual words which is helpful for other types of analyses like frequency analysis.
+```Python
+# download required NLTK resources
+from nltk.tokenize import word_tokenize, sent_tokenize
+nltk.download('punkt_tab')
+
+# tokenize words
+nlp_ready_data['tokens'] = nlp_ready_data['clean_text'].apply(word_tokenize)
+
+# tokenize sentences (optional)
+nlp_ready_data['sentences'] = nlp_ready_data['clean_text'].apply(sent_tokenize)
+```
+
+#### Frequency Analysis
+After tokenization, we can conduct frequency analysis to see which words and n-grams were the most common. In the .ipynb file, you can see that I went through several iterations for the best results. Here is the final code:
+```Python
+# lots of delimiters in the previous output. let's adjust.
+# explode tokens into individual rows
+all_tokens_per_movie = nlp_ready_data.explode('tokens')
+
+# remove stopwords
+all_tokens_per_movie = all_tokens_per_movie[
+    ~all_tokens_per_movie['tokens'].isin(stop_words)
+]
+
+# remove sentence delimiters just for this analysis
+sentence_delimiters = {".", "!", "?"}
+all_tokens_per_movie = all_tokens_per_movie[
+    ~all_tokens_per_movie['tokens'].isin(sentence_delimiters)
+]
+
+# groupby and count frequencies
+word_counts = (
+    all_tokens_per_movie
+    .groupby(['movie', 'tokens'])
+    .size()
+    .reset_index(name='frequency')
+)
+
+# get top 10 words per movie
+top_words_per_movie = (
+    word_counts
+    .sort_values(['movie', 'frequency'], ascending=[True, False])
+    .groupby('movie')
+    .head(10)
+)
+
+print(top_words_per_movie)
+```
+## Visualizing Sentiment
+Here are some visualizations I made within Python:
+
+These distributions comopare polarity and subjectivity for both movies.
+
+![polarity by movie dist](https://github.com/digitoby/PixarMarvel-SentimentAnalysis/blob/main/photos/sentiment_polarity_dist_by_movie.png)
+
+![subjectivity by movie dist](https://github.com/digitoby/PixarMarvel-SentimentAnalysis/blob/main/photos/sentiment_subjectivity_dist_by_movie.png)
+
+These wordclouds show which words were used most often in posts related to either movie.
+
+![inside out 2 wordcloud](https://github.com/digitoby/PixarMarvel-SentimentAnalysis/blob/main/photos/insideout2_wordcloud.png)
+
+![deadpool and wolverine wordcloud](https://github.com/digitoby/PixarMarvel-SentimentAnalysis/blob/main/photos/dandw_wordcloud.png)
+
+## Tableau
+
+Lastly, here is the dashboard I made in Tableau:
+
+![dashboard](https://github.com/digitoby/PixarMarvel-SentimentAnalysis/blob/main/photos/disney_dash_ss.png)
+
+Analysis is summarized in the dashboard text.
