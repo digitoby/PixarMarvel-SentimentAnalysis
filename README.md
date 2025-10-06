@@ -270,4 +270,4 @@ Lastly, here is the dashboard I made in Tableau:
 
 ![dashboard](https://github.com/digitoby/PixarMarvel-SentimentAnalysis/blob/main/photos/disney_dash_ss.png)
 
-Analysis is summarized in the dashboard text.
+Analysis is summarized in the dashboard text. If you would like to interact with the dashboard, here is the link to Tableau Public: https://public.tableau.com/views/InsideOut2vs_DeadpoolWolverineSentimentAnalysis/FinalDashboard?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link
